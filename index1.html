@@ -1,0 +1,1877 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSR - RCET Manual Timetable Generation </title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+
+        .timetable-container {
+            padding: 30px;
+            overflow-x: auto;
+        }
+
+        .timetable {
+            width: 100%;
+            border-collapse: collapse;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .timetable th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+        }
+
+        .timetable td {
+            padding: 15px;
+            border: 1px solid #e9ecef;
+            vertical-align: top;
+            min-height: 80px;
+            text-align: center;
+        }
+
+        .timetable tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .time-cell {
+            font-weight: 600;
+            color: #495057;
+            white-space: nowrap;
+            background: #e9ecef !important;
+        }
+
+        .class-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 5px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .class-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .class-card .subject {
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .class-card .details {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .class-card .actions {
+            margin-top: 8px;
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .empty-cell {
+            color: #adb5bd;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        .empty-cell:hover {
+            background: #e9ecef;
+            cursor: pointer;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .button-group .btn {
+            flex: 1;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        .time-slot-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .time-slot-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: #f8f9fa;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .timetable {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>RSR - RCET Manual Timetable Generation.</h1>
+            <p>Rungta Knowledge city, Kohka - Kurud, Bhilai (C.G)- 490024</p>
+            <p>Department of Computer Science & Engineering</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="openAddClassModal()">➕ Add Class</button>
+            <button class="btn btn-secondary" onclick="openSettingsModal()">⚙️ Configure Days & Times</button>
+            <button class="btn btn-success" onclick="downloadExcel()">📥 Download Excel</button>
+            <button class="btn btn-success" onclick="downloadWord()">📄 Download Word</button>
+            <button class="btn btn-danger" onclick="clearTimetable()">🗑️ Clear All</button>
+        </div>
+
+        <div class="timetable-container" id="timetableContainer">
+            <div class="loading">Loading timetable...</div>
+        </div>
+    </div>
+
+    <div class="modal" id="classModal">
+        <div class="modal-content">
+            <h2 id="classModalTitle">Add New Class</h2>
+            <form id="classForm">
+                <div class="form-group">
+                    <label>Subject Name *</label>
+                    <input type="text" id="subject" required placeholder="e.g., Mathematics">
+                </div>
+                <div class="form-group">
+                    <label>Teacher Name *</label>
+                    <input type="text" id="teacher" required placeholder="e.g., Dr. Smith">
+                </div>
+                <div class="form-group">
+                    <label>Room/Location *</label>
+                    <input type="text" id="room" required placeholder="e.g., Room 101">
+                </div>
+                <div class="form-group">
+                    <label>Day *</label>
+                    <select id="day" required>
+                        <option value="">Select Day</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Time Slot *</label>
+                    <select id="time" required>
+                        <option value="">Select Time</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Additional Notes (Optional)</label>
+                    <textarea id="notes" rows="3" placeholder="Any additional information..."></textarea>
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="btn btn-success">Save Class</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeClassModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <h2>Configure Days & Time Slots</h2>
+            
+            <div class="form-group">
+                <label>Days (comma separated)</label>
+                <input type="text" id="daysInput" placeholder="Monday, Tuesday, Wednesday, Thursday, Friday">
+            </div>
+
+            <div class="form-group">
+                <label>Time Slots</label>
+                <div id="timeSlotsList" class="time-slot-list"></div>
+                <div style="margin-top: 10px;">
+                    <input type="text" id="newTimeSlot" placeholder="e.g., 9:00 AM - 10:00 AM" style="width: calc(100% - 90px); display: inline-block;">
+                    <button type="button" class="btn btn-primary btn-small" onclick="addTimeSlot()" style="width: 80px; display: inline-block; margin-left: 5px;">Add</button>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="btn btn-success" onclick="saveSettings()">Save Settings</button>
+                <button type="button" class="btn btn-secondary" onclick="closeSettingsModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTimetable = {
+            classes: [],
+            days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+            time_slots: [
+                '9:20 AM - 10:10 AM',
+                '10:10 AM - 11:00 AM',
+                '11:20 AM - 12:10 PM',
+                '12:10 PM - 1:00 PM',
+                '1:40 PM - 2:30 PM',
+                '2:30 PM - 3:20 PM',
+                '3:20 PM - 4:10 PM'
+                
+            ]
+        };
+        let editingClassId = null;
+
+        window.onload = function() {
+            loadTimetable();
+        };
+
+        function loadTimetable() {
+            if (currentTimetable.days.length === 0 || currentTimetable.time_slots.length === 0) {
+                document.getElementById('timetableContainer').innerHTML = 
+                    '<div class="loading">Please configure days and time slots first! Click "Configure Days & Times"</div>';
+            } else {
+                displayTimetable();
+            }
+        }
+
+        function displayTimetable() {
+            const container = document.getElementById('timetableContainer');
+            
+            let html = '<table class="timetable"><thead><tr><th>Time</th>';
+            
+            currentTimetable.days.forEach(day => {
+                html += `<th>${day}</th>`;
+            });
+            
+            html += '</tr></thead><tbody>';
+            
+            currentTimetable.time_slots.forEach(timeSlot => {
+                html += `<tr><td class="time-cell">${timeSlot}</td>`;
+                
+                currentTimetable.days.forEach(day => {
+                    const classInfo = findClass(day, timeSlot);
+                    
+                    if (classInfo) {
+                        html += `<td onclick="editClass(${classInfo.id})">
+                            <div class="class-card">
+                                <div class="subject">${escapeHtml(classInfo.subject)}</div>
+                                <div class="details">👤 ${escapeHtml(classInfo.teacher)}</div>
+                                <div class="details">📍 ${escapeHtml(classInfo.room)}</div>
+                                ${classInfo.notes ? `<div class="details">📝 ${escapeHtml(classInfo.notes)}</div>` : ''}
+                                <div class="actions">
+                                    <button class="btn btn-danger btn-small" onclick="event.stopPropagation(); deleteClass(${classInfo.id})">Delete</button>
+                                </div>
+                            </div>
+                        </td>`;
+                    } else {
+                        html += `<td class="empty-cell" onclick="addClassAt('${day}', '${timeSlot}')">
+                            Click to add class
+                        </td>`;
+                    }
+                });
+                
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function findClass(day, time) {
+            const index = currentTimetable.classes.findIndex(c => c.day === day && c.time === time);
+            if (index !== -1) {
+                return { ...currentTimetable.classes[index], id: index };
+            }
+            return null;
+        }
+
+        function openAddClassModal() {
+            editingClassId = null;
+            document.getElementById('classModalTitle').textContent = 'Add New Class';
+            document.getElementById('classForm').reset();
+            populateDaysAndTimes();
+            document.getElementById('classModal').classList.add('active');
+        }
+
+        function addClassAt(day, time) {
+            openAddClassModal();
+            document.getElementById('day').value = day;
+            document.getElementById('time').value = time;
+        }
+
+        function editClass(classId) {
+            editingClassId = classId;
+            const classInfo = currentTimetable.classes[classId];
+            
+            document.getElementById('classModalTitle').textContent = 'Edit Class';
+            document.getElementById('subject').value = classInfo.subject;
+            document.getElementById('teacher').value = classInfo.teacher;
+            document.getElementById('room').value = classInfo.room;
+            document.getElementById('notes').value = classInfo.notes || '';
+            
+            populateDaysAndTimes();
+            document.getElementById('day').value = classInfo.day;
+            document.getElementById('time').value = classInfo.time;
+            
+            document.getElementById('classModal').classList.add('active');
+        }
+
+        function populateDaysAndTimes() {
+            const daySelect = document.getElementById('day');
+            const timeSelect = document.getElementById('time');
+            
+            daySelect.innerHTML = '<option value="">Select Day</option>';
+            currentTimetable.days.forEach(day => {
+                daySelect.innerHTML += `<option value="${day}">${day}</option>`;
+            });
+            
+            timeSelect.innerHTML = '<option value="">Select Time</option>';
+            currentTimetable.time_slots.forEach(time => {
+                timeSelect.innerHTML += `<option value="${time}">${time}</option>`;
+            });
+        }
+
+        function closeClassModal() {
+            document.getElementById('classModal').classList.remove('active');
+            editingClassId = null;
+        }
+
+        document.getElementById('classForm').onsubmit = function(e) {
+            e.preventDefault();
+            
+            const classData = {
+                subject: document.getElementById('subject').value,
+                teacher: document.getElementById('teacher').value,
+                room: document.getElementById('room').value,
+                day: document.getElementById('day').value,
+                time: document.getElementById('time').value,
+                notes: document.getElementById('notes').value
+            };
+
+            const existingClass = findClass(classData.day, classData.time);
+            if (existingClass && existingClass.id !== editingClassId) {
+                alert('A class already exists at this time slot!');
+                return;
+            }
+
+            if (editingClassId !== null) {
+                currentTimetable.classes[editingClassId] = classData;
+            } else {
+                currentTimetable.classes.push(classData);
+            }
+
+            closeClassModal();
+            loadTimetable();
+        };
+
+        function deleteClass(classId) {
+            if (!confirm('Are you sure you want to delete this class?')) return;
+            currentTimetable.classes.splice(classId, 1);
+            loadTimetable();
+        }
+
+        function clearTimetable() {
+            if (!confirm('Are you sure you want to clear all classes? This cannot be undone!')) return;
+            currentTimetable.classes = [];
+            loadTimetable();
+        }
+
+        function openSettingsModal() {
+            document.getElementById('daysInput').value = currentTimetable.days.join(', ');
+            displayTimeSlots(currentTimetable.time_slots);
+            document.getElementById('settingsModal').classList.add('active');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+
+        function displayTimeSlots(slots) {
+            const list = document.getElementById('timeSlotsList');
+            list.innerHTML = '';
+            
+            slots.forEach((slot, index) => {
+                list.innerHTML += `
+                    <div class="time-slot-item">
+                        <span>${escapeHtml(slot)}</span>
+                        <button type="button" class="btn btn-danger btn-small" onclick="removeTimeSlot(${index})">Remove</button>
+                    </div>
+                `;
+            });
+        }
+
+        function addTimeSlot() {
+            const input = document.getElementById('newTimeSlot');
+            const newSlot = input.value.trim();
+            
+            if (newSlot) {
+                currentTimetable.time_slots.push(newSlot);
+                displayTimeSlots(currentTimetable.time_slots);
+                input.value = '';
+            }
+        }
+
+        function removeTimeSlot(index) {
+            currentTimetable.time_slots.splice(index, 1);
+            displayTimeSlots(currentTimetable.time_slots);
+        }
+
+        function saveSettings() {
+            const daysInput = document.getElementById('daysInput').value;
+            const days = daysInput.split(',').map(d => d.trim()).filter(d => d);
+
+            if (days.length === 0 || currentTimetable.time_slots.length === 0) {
+                alert('Please add at least one day and one time slot');
+                return;
+            }
+
+            currentTimetable.days = days;
+            closeSettingsModal();
+            loadTimetable();
+        }
+
+        function downloadExcel() {
+            let csv = 'Time,' + currentTimetable.days.join(',') + '\n';
+            
+            currentTimetable.time_slots.forEach(timeSlot => {
+                let row = '"' + timeSlot + '"';
+                
+                currentTimetable.days.forEach(day => {
+                    const classInfo = findClass(day, timeSlot);
+                    if (classInfo) {
+                        const cellContent = `${classInfo.subject}\nTeacher: ${classInfo.teacher}\nRoom: ${classInfo.room}${classInfo.notes ? '\nNotes: ' + classInfo.notes : ''}`;
+                        row += ',"' + cellContent.replace(/"/g, '""') + '"';
+                    } else {
+                        row += ',""';
+                    }
+                });
+                
+                csv += row + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'timetable.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function downloadWord() {
+            let html = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Timetable</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th {
+            background-color: #667eea;
+            color: white;
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: center;
+            font-weight: bold;
+        }
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            vertical-align: top;
+            min-height: 80px;
+        }
+        .time-cell {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            text-align: center;
+        }
+        .class-info {
+            background-color: #667eea;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .subject {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .details {
+            font-size: 12px;
+            margin: 3px 0;
+        }
+        .empty-cell {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>📚 Weekly Timetable</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Time</th>`;
+            
+            currentTimetable.days.forEach(day => {
+                html += `<th>${day}</th>`;
+            });
+            
+            html += `
+            </tr>
+        </thead>
+        <tbody>`;
+            
+            currentTimetable.time_slots.forEach(timeSlot => {
+                html += `<tr><td class="time-cell">${timeSlot}</td>`;
+                
+                currentTimetable.days.forEach(day => {
+                    const classInfo = findClass(day, timeSlot);
+                    
+                    if (classInfo) {
+                        html += `<td>
+                            <div class="class-info">
+                                <div class="subject">${escapeHtml(classInfo.subject)}</div>
+                                <div class="details">👤 Teacher: ${escapeHtml(classInfo.teacher)}</div>
+                                <div class="details">📍 Room: ${escapeHtml(classInfo.room)}</div>
+                                ${classInfo.notes ? `<div class="details">📝 Notes: ${escapeHtml(classInfo.notes)}</div>` : ''}
+                            </div>
+                        </td>`;
+                    } else {
+                        html += `<td class="empty-cell">-</td>`;
+                    }
+                });
+                
+                html += '</tr>';
+            });
+            
+            html += `
+        </tbody>
+    </table>
+</body>
+</html>`;
+
+            const blob = new Blob(['\ufeff', html], {
+                type: 'application/msword'
+            });
+            
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'timetable.doc');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html> -->
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Timetable Creator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .timetable-container {
+            padding: 30px;
+            overflow-x: auto;
+        }
+
+        .day-section {
+            margin-bottom: 40px;
+        }
+
+        .day-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            font-size: 1.5em;
+            font-weight: 700;
+            text-transform: uppercase;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+        }
+
+        .timetable {
+            width: 100%;
+            border-collapse: collapse;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+
+        .timetable th {
+            background: #495057;
+            color: white;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.85em;
+            border: 1px solid #dee2e6;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .timetable th.time-header {
+            background: #343a40;
+            min-width: 120px;
+        }
+
+        .timetable td {
+            padding: 10px 8px;
+            border: 1px solid #dee2e6;
+            vertical-align: top;
+            min-height: 60px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        .timetable tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .time-cell {
+            font-weight: 600;
+            color: #495057;
+            white-space: nowrap;
+            background: #e9ecef !important;
+        }
+
+        .class-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85em;
+        }
+
+        .class-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .class-card.conflict {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            border: 2px solid #ff0000;
+        }
+
+        .class-info {
+            margin: 2px 0;
+            font-size: 0.9em;
+        }
+
+        .class-subject {
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .empty-cell {
+            color: #adb5bd;
+            font-style: italic;
+            padding: 15px;
+            min-height: 50px;
+        }
+
+        .empty-cell:hover {
+            background: #e9ecef;
+            cursor: pointer;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .button-group .btn {
+            flex: 1;
+        }
+
+        .list-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: #f8f9fa;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+
+        .alert {
+            padding: 15px;
+            margin: 20px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        @media print {
+            .controls, .header p, .btn {
+                display: none;
+            }
+            .header {
+                padding: 10px;
+            }
+            .day-section {
+                page-break-after: always;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            .controls {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <!-- <h1>📚 Academic Timetable Creator</h1>
+            <p>Organize classes by courses - No scheduling conflicts!</p> -->
+            <h1>RSR - RCET Manual Timetable Generation.</h1>
+            <p>Rungta Knowledge city, Kohka - Kurud, Bhilai (C.G)- 490024</p>
+            <p>Department of Computer Science & Engineering</p>
+            <p>Prepared by Mr. Saurabh Singh </p>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="openAddClassModal()">➕ Add Class</button>
+            <button class="btn btn-secondary" onclick="openSettingsModal()">⚙️ Configure Courses & Times</button>
+            <div class="file-input-wrapper">
+                <label for="csvFile" class="btn btn-warning">📂 Import CSV</label>
+                <input type="file" id="csvFile" accept=".csv" onchange="importCSV(event)">
+            </div>
+            <button class="btn btn-success" onclick="downloadExcel()">📥 Download Excel</button>
+            <button class="btn btn-success" onclick="downloadWord()">📄 Download Word</button>
+            <button class="btn btn-danger" onclick="clearTimetable()">🗑️ Clear All</button>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div class="timetable-container" id="timetableContainer">
+            <div style="text-align: center; padding: 50px; color: #667eea; font-size: 1.2em;">
+                Loading timetable...
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Class Modal -->
+    <div class="modal" id="classModal">
+        <div class="modal-content">
+            <h2 id="classModalTitle">Add New Class</h2>
+            <form id="classForm">
+                <div class="form-group">
+                    <label>Subject/Course Name *</label>
+                    <input type="text" id="subject" required placeholder="e.g., Data Structures">
+                </div>
+                <div class="form-group">
+                    <label>Teacher Name</label>
+                    <input type="text" id="teacher" placeholder="e.g., Dr. Smith">
+                </div>
+                <div class="form-group">
+                    <label>Room/Location</label>
+                    <input type="text" id="room" placeholder="e.g., Lab 101">
+                </div>
+                <div class="form-group">
+                    <label>Day *</label>
+                    <select id="day" required>
+                        <option value="">Select Day</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Course/Program *</label>
+                    <select id="course" required>
+                        <option value="">Select Course</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Time Slot *</label>
+                    <select id="time" required>
+                        <option value="">Select Time</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Additional Notes</label>
+                    <textarea id="notes" rows="2" placeholder="Optional notes..."></textarea>
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="btn btn-success">Save Class</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeClassModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <h2>Configure Courses & Time Slots</h2>
+            
+            <div class="form-group">
+                <label>Days (comma separated)</label>
+                <input type="text" id="daysInput" placeholder="MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY">
+            </div>
+
+            <div class="form-group">
+                <label>Courses/Programs</label>
+                <div id="coursesList" class="list-container"></div>
+                <div style="margin-top: 10px; display: flex; gap: 5px;">
+                    <input type="text" id="newCourse" placeholder="e.g., BCA-I (HYU) NEP" style="flex: 1;">
+                    <button type="button" class="btn btn-primary btn-small" onclick="addCourse()">Add</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Time Slots</label>
+                <div id="timeSlotsList" class="list-container"></div>
+                <div style="margin-top: 10px; display: flex; gap: 5px;">
+                    <input type="text" id="newTimeSlot" placeholder="e.g., 9:00 AM - 10:00 AM" style="flex: 1;">
+                    <button type="button" class="btn btn-primary btn-small" onclick="addTimeSlot()">Add</button>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="btn btn-success" onclick="saveSettings()">Save Settings</button>
+                <button type="button" class="btn btn-secondary" onclick="closeSettingsModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTimetable = {
+            classes: [],
+            days: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'],
+            courses: [
+                'DCA',
+                'PGDCA',
+                'BCA-I (HYU) NEP',
+                'BCA-3 SEM NEP',
+                'BCA-3 Year',
+                'BCA-3 (OLD)',
+                'BCA 1ST SEM (CSVTU)',
+                'DIP-V (AIML)',
+                'DIP-III (AIML)',
+                'MCA I',
+                'MCA III',
+                'B.TECH 5TH (CSE)',
+                'B.TECH 5TH (AIML)',
+                'B.TECH 5TH (DS)',
+                'BTECH 3 (CSE Q1)',
+                'BTECH 3 (DS Q2)',
+                'BTECH 3 (AIML Q3)',
+                'BTECH 7 (CSE)',
+                'BTECH 7 (AIML)'
+            ],
+            time_slots: [
+                '9:20 AM - 10:10 AM',
+                '10:10 AM - 11:00 AM',
+                '11:20 AM - 12:10 PM',
+                '12:10 PM - 1:00 PM',
+                '1:40 PM - 2:30 PM',
+                '2:30 PM - 3:20 PM',
+                '3:20 PM - 4:10 PM'
+                
+            ]
+        };
+        let editingClassId = null;
+
+        window.onload = function() {
+            loadTimetable();
+        };
+
+        function showAlert(message, type = 'info') {
+            const container = document.getElementById('alertContainer');
+            const alertClass = type === 'error' ? 'alert-danger' : 'alert-success';
+            container.innerHTML = `<div class="alert ${alertClass}">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        function checkConflicts(day, course, time, excludeId = null) {
+            return currentTimetable.classes.some((cls, idx) => 
+                cls.day === day && cls.course === course && cls.time === time && idx !== excludeId
+            );
+        }
+
+        function loadTimetable() {
+            if (currentTimetable.days.length === 0 || currentTimetable.courses.length === 0 || currentTimetable.time_slots.length === 0) {
+                document.getElementById('timetableContainer').innerHTML = 
+                    '<div style="text-align: center; padding: 50px; color: #667eea; font-size: 1.2em;">Please configure days, courses and time slots first!</div>';
+            } else {
+                displayTimetable();
+            }
+        }
+
+        function displayTimetable() {
+            const container = document.getElementById('timetableContainer');
+            let html = '';
+
+            currentTimetable.days.forEach(day => {
+                html += `<div class="day-section">
+                    <div class="day-title">${day}</div>
+                    <table class="timetable">
+                        <thead>
+                            <tr>
+                                <th class="time-header">Courses/Time</th>`;
+                
+                currentTimetable.courses.forEach(course => {
+                    html += `<th>${escapeHtml(course)}</th>`;
+                });
+                
+                html += `</tr></thead><tbody>`;
+                
+                currentTimetable.time_slots.forEach(timeSlot => {
+                    html += `<tr><td class="time-cell">${timeSlot}</td>`;
+                    
+                    currentTimetable.courses.forEach(course => {
+                        const classInfo = findClass(day, course, timeSlot);
+                        
+                        if (classInfo) {
+                            const hasConflict = checkConflicts(day, course, timeSlot, classInfo.id);
+                            const conflictClass = hasConflict ? ' conflict' : '';
+                            html += `<td onclick="editClass(${classInfo.id})">
+                                <div class="class-card${conflictClass}">
+                                    <div class="class-subject">${escapeHtml(classInfo.subject)}</div>
+                                    ${classInfo.teacher ? `<div class="class-info">👤 ${escapeHtml(classInfo.teacher)}</div>` : ''}
+                                    ${classInfo.room ? `<div class="class-info">📍 ${escapeHtml(classInfo.room)}</div>` : ''}
+                                    ${classInfo.notes ? `<div class="class-info">📝 ${escapeHtml(classInfo.notes)}</div>` : ''}
+                                    ${hasConflict ? '<div class="class-info">⚠️ CONFLICT!</div>' : ''}
+                                    <button class="btn btn-danger btn-small" style="margin-top: 5px;" onclick="event.stopPropagation(); deleteClass(${classInfo.id})">×</button>
+                                </div>
+                            </td>`;
+                        } else {
+                            html += `<td class="empty-cell" onclick="addClassAt('${day}', '${course}', '${timeSlot}')">
+                                +
+                            </td>`;
+                        }
+                    });
+                    
+                    html += '</tr>';
+                });
+                
+                html += '</tbody></table></div>';
+            });
+
+            container.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function findClass(day, course, time) {
+            const index = currentTimetable.classes.findIndex(c => 
+                c.day === day && c.course === course && c.time === time
+            );
+            if (index !== -1) {
+                return { ...currentTimetable.classes[index], id: index };
+            }
+            return null;
+        }
+
+        function openAddClassModal() {
+            editingClassId = null;
+            document.getElementById('classModalTitle').textContent = 'Add New Class';
+            document.getElementById('classForm').reset();
+            populateDropdowns();
+            document.getElementById('classModal').classList.add('active');
+        }
+
+        function addClassAt(day, course, time) {
+            openAddClassModal();
+            document.getElementById('day').value = day;
+            document.getElementById('course').value = course;
+            document.getElementById('time').value = time;
+        }
+
+        function editClass(classId) {
+            editingClassId = classId;
+            const classInfo = currentTimetable.classes[classId];
+            
+            document.getElementById('classModalTitle').textContent = 'Edit Class';
+            document.getElementById('subject').value = classInfo.subject;
+            document.getElementById('teacher').value = classInfo.teacher || '';
+            document.getElementById('room').value = classInfo.room || '';
+            document.getElementById('notes').value = classInfo.notes || '';
+            
+            populateDropdowns();
+            document.getElementById('day').value = classInfo.day;
+            document.getElementById('course').value = classInfo.course;
+            document.getElementById('time').value = classInfo.time;
+            
+            document.getElementById('classModal').classList.add('active');
+        }
+
+        function populateDropdowns() {
+            const daySelect = document.getElementById('day');
+            const courseSelect = document.getElementById('course');
+            const timeSelect = document.getElementById('time');
+            
+            daySelect.innerHTML = '<option value="">Select Day</option>';
+            currentTimetable.days.forEach(day => {
+                daySelect.innerHTML += `<option value="${day}">${day}</option>`;
+            });
+            
+            courseSelect.innerHTML = '<option value="">Select Course</option>';
+            currentTimetable.courses.forEach(course => {
+                courseSelect.innerHTML += `<option value="${course}">${escapeHtml(course)}</option>`;
+            });
+            
+            timeSelect.innerHTML = '<option value="">Select Time</option>';
+            currentTimetable.time_slots.forEach(time => {
+                timeSelect.innerHTML += `<option value="${time}">${time}</option>`;
+            });
+        }
+
+        function closeClassModal() {
+            document.getElementById('classModal').classList.remove('active');
+            editingClassId = null;
+        }
+
+        document.getElementById('classForm').onsubmit = function(e) {
+            e.preventDefault();
+            
+            const classData = {
+                subject: document.getElementById('subject').value,
+                teacher: document.getElementById('teacher').value,
+                room: document.getElementById('room').value,
+                day: document.getElementById('day').value,
+                course: document.getElementById('course').value,
+                time: document.getElementById('time').value,
+                notes: document.getElementById('notes').value
+            };
+
+            const existingClass = findClass(classData.day, classData.course, classData.time);
+            if (existingClass && existingClass.id !== editingClassId) {
+                showAlert('⚠️ A class already exists at this time slot for this course!', 'error');
+                return;
+            }
+
+            if (editingClassId !== null) {
+                currentTimetable.classes[editingClassId] = classData;
+                showAlert('✓ Class updated successfully!', 'success');
+            } else {
+                currentTimetable.classes.push(classData);
+                showAlert('✓ Class added successfully!', 'success');
+            }
+
+            closeClassModal();
+            loadTimetable();
+        };
+
+        function deleteClass(classId) {
+            if (!confirm('Are you sure you want to delete this class?')) return;
+            currentTimetable.classes.splice(classId, 1);
+            showAlert('✓ Class deleted successfully!', 'success');
+            loadTimetable();
+        }
+
+        function clearTimetable() {
+            if (!confirm('Are you sure you want to clear all classes? This cannot be undone!')) return;
+            currentTimetable.classes = [];
+            showAlert('✓ All classes cleared!', 'success');
+            loadTimetable();
+        }
+
+        function openSettingsModal() {
+            document.getElementById('daysInput').value = currentTimetable.days.join(', ');
+            displayCourses(currentTimetable.courses);
+            displayTimeSlots(currentTimetable.time_slots);
+            document.getElementById('settingsModal').classList.add('active');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+
+        function displayCourses(courses) {
+            const list = document.getElementById('coursesList');
+            list.innerHTML = '';
+            courses.forEach((course, index) => {
+                list.innerHTML += `
+                    <div class="list-item">
+                        <span>${escapeHtml(course)}</span>
+                        <button type="button" class="btn btn-danger btn-small" onclick="removeCourse(${index})">Remove</button>
+                    </div>
+                `;
+            });
+        }
+
+        function addCourse() {
+            const input = document.getElementById('newCourse');
+            const newCourse = input.value.trim();
+            if (newCourse) {
+                currentTimetable.courses.push(newCourse);
+                displayCourses(currentTimetable.courses);
+                input.value = '';
+            }
+        }
+
+        function removeCourse(index) {
+            currentTimetable.courses.splice(index, 1);
+            displayCourses(currentTimetable.courses);
+        }
+
+        function displayTimeSlots(slots) {
+            const list = document.getElementById('timeSlotsList');
+            list.innerHTML = '';
+            slots.forEach((slot, index) => {
+                list.innerHTML += `
+                    <div class="list-item">
+                        <span>${escapeHtml(slot)}</span>
+                        <button type="button" class="btn btn-danger btn-small" onclick="removeTimeSlot(${index})">Remove</button>
+                    </div>
+                `;
+            });
+        }
+
+        function addTimeSlot() {
+            const input = document.getElementById('newTimeSlot');
+            const newSlot = input.value.trim();
+            if (newSlot) {
+                currentTimetable.time_slots.push(newSlot);
+                displayTimeSlots(currentTimetable.time_slots);
+                input.value = '';
+            }
+        }
+
+        function removeTimeSlot(index) {
+            currentTimetable.time_slots.splice(index, 1);
+            displayTimeSlots(currentTimetable.time_slots);
+        }
+
+        function saveSettings() {
+            const daysInput = document.getElementById('daysInput').value;
+            const days = daysInput.split(',').map(d => d.trim()).filter(d => d);
+
+            if (days.length === 0 || currentTimetable.courses.length === 0 || currentTimetable.time_slots.length === 0) {
+                alert('Please add at least one day, one course, and one time slot');
+                return;
+            }
+
+            currentTimetable.days = days;
+            closeSettingsModal();
+            showAlert('✓ Settings saved successfully!', 'success');
+            loadTimetable();
+        }
+
+        function importCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                parseCSV(text);
+            };
+            reader.readAsText(file);
+        }
+
+        function parseCSV(text) {
+            const lines = text.split('\n').filter(line => line.trim());
+            if (lines.length < 2) {
+                showAlert('⚠️ CSV file is empty or invalid!', 'error');
+                return;
+            }
+
+            try {
+                const newClasses = [];
+                let currentDay = '';
+                
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    
+                    if (line.match(/^(MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY|SATURDAY|SUNDAY)/i)) {
+                        currentDay = line.toUpperCase();
+                        i++; 
+                        continue;
+                    }
+                    
+                    if (line.startsWith('Courses/Time')) {
+                        continue;
+                    }
+                    
+                    if (currentDay && line) {
+                        const values = parseCSVLine(line);
+                        if (values.length > 1) {
+                            const timeSlot = values[0]?.trim();
+                            if (timeSlot) {
+                                for (let j = 1; j < values.length; j++) {
+                                    const cellContent = values[j]?.trim();
+                                    if (cellContent && currentTimetable.courses[j-1]) {
+                                        const course = currentTimetable.courses[j-1];
+                                        newClasses.push({
+                                            subject: cellContent,
+                                            teacher: '',
+                                            room: '',
+                                            day: currentDay,
+                                            course: course,
+                                            time: timeSlot,
+                                            notes: ''
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (newClasses.length > 0) {
+                    currentTimetable.classes = [...currentTimetable.classes, ...newClasses];
+                    showAlert(`✓ CSV imported successfully! ${newClasses.length} classes added.`, 'success');
+                    loadTimetable();
+                } else {
+                    showAlert('⚠️ No classes found in CSV file!', 'error');
+                }
+            } catch (error) {
+                showAlert('⚠️ Error parsing CSV file!', 'error');
+            }
+
+            event.target.value = '';
+        }
+
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+            return result;
+        }
+
+        function downloadExcel() {
+            let csv = '';
+            
+            currentTimetable.days.forEach(day => {
+                csv += day + '\n';
+                csv += 'Courses/Time,' + currentTimetable.courses.join(',') + '\n';
+                
+                currentTimetable.time_slots.forEach(timeSlot => {
+                    let row = '"' + timeSlot + '"';
+                    
+                    currentTimetable.courses.forEach(course => {
+                        const classInfo = findClass(day, course, timeSlot);
+                        if (classInfo) {
+                            let cellContent = classInfo.subject;
+                            if (classInfo.teacher) cellContent += '\nTeacher: ' + classInfo.teacher;
+                            if (classInfo.room) cellContent += '\nRoom: ' + classInfo.room;
+                            if (classInfo.notes) cellContent += '\nNotes: ' + classInfo.notes;
+                            row += ',"' + cellContent.replace(/"/g, '""') + '"';
+                        } else {
+                            row += ',""';
+                        }
+                    });
+                    
+                    csv += row + '\n';
+                });
+                
+                csv += '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'academic_timetable.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showAlert('✓ Excel file downloaded!', 'success');
+        }
+
+        function downloadWord() {
+            let html = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Academic Timetable</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+        }
+        .day-section {
+            margin-bottom: 40px;
+            page-break-after: always;
+        }
+        .day-title {
+            background-color: #667eea;
+            color: white;
+            padding: 15px;
+            font-size: 1.5em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th {
+            background-color: #495057;
+            color: white;
+            padding: 10px 5px;
+            border: 1px solid #ddd;
+            text-align: center;
+            font-weight: bold;
+            font-size: 11px;
+        }
+        th.time-header {
+            background-color: #343a40;
+            min-width: 100px;
+        }
+        td {
+            border: 1px solid #ddd;
+            padding: 8px 5px;
+            vertical-align: top;
+            font-size: 10px;
+        }
+        .time-cell {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            text-align: center;
+        }
+        .class-info {
+            background-color: #667eea;
+            color: white;
+            padding: 8px;
+            border-radius: 5px;
+            margin: 2px;
+        }
+        .class-subject {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        .class-detail {
+            font-size: 9px;
+            margin: 2px 0;
+        }
+        .empty-cell {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1> Academic Timetable</h1>`;
+            
+            currentTimetable.days.forEach(day => {
+                html += `<div class="day-section">
+                    <div class="day-title">${day}</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="time-header">Courses/Time</th>`;
+                
+                currentTimetable.courses.forEach(course => {
+                    html += `<th>${escapeHtml(course)}</th>`;
+                });
+                
+                html += `</tr></thead><tbody>`;
+                
+                currentTimetable.time_slots.forEach(timeSlot => {
+                    html += `<tr><td class="time-cell">${timeSlot}</td>`;
+                    
+                    currentTimetable.courses.forEach(course => {
+                        const classInfo = findClass(day, course, timeSlot);
+                        
+                        if (classInfo) {
+                            html += `<td>
+                                <div class="class-info">
+                                    <div class="class-subject">${escapeHtml(classInfo.subject)}</div>
+                                    ${classInfo.teacher ? `<div class="class-detail">👤 ${escapeHtml(classInfo.teacher)}</div>` : ''}
+                                    ${classInfo.room ? `<div class="class-detail">📍 ${escapeHtml(classInfo.room)}</div>` : ''}
+                                    ${classInfo.notes ? `<div class="class-detail"> ${escapeHtml(classInfo.notes)}</div>` : ''}
+                                </div>
+                            </td>`;
+                        } else {
+                            html += `<td class="empty-cell">-</td>`;
+                        }
+                    });
+                    
+                    html += '</tr>';
+                });
+                
+                html += '</tbody></table></div>';
+            });
+            
+            html += `</body></html>`;
+
+            const blob = new Blob(['\ufeff', html], {
+                type: 'application/msword'
+            });
+            
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'academic_timetable.doc');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showAlert('✓ Word document downloaded!', 'success');
+        }
+    </script>
+</body>
+</html>
